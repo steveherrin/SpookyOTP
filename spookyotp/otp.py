@@ -212,10 +212,23 @@ class HOTP(OTPBase):
                              self._account, self._n_digits,
                              self._algorithm_name, counter=self.counter)
 
-    def get_otp(self, counter=None):
+    def get_otp(self, counter=None, auto_increment=True):
+        """
+        Get the HOTP for a specified counter, or the current one by default.
+        If no counter is specified, and auto_increment is True (default)
+        the counter will automatically increment for generating the next code.
+
+        Args:
+          counter (int, optional): The counter value (default: current value)
+          auto_increment (bool, optional): Automatically increment the counter
+                                           if one wasn't specified. Does
+                                           nothing if the counter was
+                                           specified. (default: True)
+        """
         if counter is None:
             counter = self.counter
-            self.counter += 1
+            if auto_increment:
+                self.counter += 1
         otp = self._get_otp(self._secret, counter,
                             self._n_digits, self._algorithm)
         return otp

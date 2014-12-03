@@ -207,6 +207,21 @@ class TestHOTP(unittest.TestCase, CommonOTPTests):
         # counter should be incremented automatically
         self.assertEqual(self.otp.counter, self.counter + 1)
 
+    @mock.patch('spookyotp.otp.OTPBase._get_otp')
+    def test_get_otp_no_autoincrement(self, mock_get_otp):
+        """
+        Test get_otp works using the internal counter but doesn't
+        increment it if auto_increment is false.
+        """
+        mock_get_otp.return_value = '123456'
+        otp = self.otp.get_otp(auto_increment=False)
+        mock_get_otp.assert_called_with(self.secret, self.counter,
+                                        self.n_digits,
+                                        getattr(hashlib, self.algorithm))
+        self.assertEqual(otp, '123456')
+        # counter should be incremented automatically
+        self.assertEqual(self.otp.counter, self.counter)
+
     def test_compare_no_lookahead(self):
         """
         Test compare returns True if the codes are identical
