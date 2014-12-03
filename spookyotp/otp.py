@@ -174,11 +174,25 @@ class TOTP(OTPBase):
         self._current_timestamp = time_source or time.time
 
     def get_uri(self):
+        """
+        Return a URL that encodes the OTP parameters so they can
+        be loaded onto a phone (or the like) via a QR code.
+
+        Complies with the google-authenticator KeyUriFormat
+        """
         return self._get_uri(self._secret, self._issuer,
                              self._account, self._n_digits,
                              self._algorithm_name, period=self._period)
 
     def get_otp(self, timestamp=None):
+        """
+        Get the TOTP for a specified time, or now by default.
+
+        Args:
+          timestamp (int or float, optional): The timestamp to get a code for
+                                              in seconds since an epoch.
+                                              (default: now)
+        """
         if timestamp is None:
             timestamp = self._current_timestamp()
         otp = self._get_otp(self._secret,
@@ -187,6 +201,19 @@ class TOTP(OTPBase):
         return otp
 
     def compare(self, code, max_step_difference=1):
+        """
+        Check the code to see if it's valid, by default looking
+        at the current, most recent past, and next future code
+        to allow for clock skew.
+        Returns True if the code is valid.
+
+        Args:
+          code (str): The code to check
+          max_step_difference (int, optional): Check +/- this many valid
+                                               codes around the current one
+                                               to allow for clock skew.
+                                               (default: 1)
+        """
         if max_step_difference < 0:
             raise ValueError("Max step difference must be non-negative")
         timestamp = self._current_timestamp()
@@ -203,11 +230,31 @@ class HOTP(OTPBase):
 
     def __init__(self, secret, issuer, account,
                  n_digits=6, algorithm='sha1', counter=0):
+        """
+        Generates HOTP (incrementing counter-based) codes.
+
+        Args:
+          secret (bytearray or str): The shared secret used to generate
+                                     codes. If str, must be base32 encoded.
+          issuer (str): The issuer who provides or manages the account
+          account (str): A label for the account that uses the OTP
+          n_digits (int, optional): The number of digits each code
+                                    uses (default: 6)
+          algorithm (str, optional): The hashing algorithm to use when
+                                     generating the OTP code (default: 'sha1')
+          counter (int, optional): The initial counter value (default: 0)
+        """
         self._setup(secret, issuer, account,
                     n_digits, algorithm)
         self.counter = int(counter)
 
     def get_uri(self):
+        """
+        Return a URL that encodes the OTP parameters so they can
+        be loaded onto a phone (or the like) via a QR code.
+
+        Complies with the google-authenticator KeyUriFormat
+        """
         return self._get_uri(self._secret, self._issuer,
                              self._account, self._n_digits,
                              self._algorithm_name, counter=self.counter)
@@ -234,6 +281,21 @@ class HOTP(OTPBase):
         return otp
 
     def compare(self, code, look_ahead=2):
+        """
+        Check the code to see if it's valid, comparing it to the
+        code for the current counter and several future codes to
+        allow for the generators getting out of sync.
+        Returns True if the code is valid.
+
+        The current counter will be synchronized to match the code
+        entered.
+
+        Args:
+          code (str): The code to check
+          look_ahead (int, optional): Check this many valid codes in the
+                                      future of the current code
+                                      (default: 2)
+        """
         if look_ahead < 0:
             raise ValueError("Look-ahead must be non-negative")
         counters = [self.counter + i
