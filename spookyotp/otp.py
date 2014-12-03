@@ -38,7 +38,7 @@ class OTPBase(object):
     """
     Base class for the OTP generators
     """
-    _protocol = 'otp'
+    _otp_type = 'otp'
     _extra_uri_parameters = frozenset()
 
     def __init__(self):
@@ -97,7 +97,7 @@ class OTPBase(object):
 
         Complies with the google-authenticator KeyUriFormat
         """
-        encoded_protocol = quote(cls._protocol)
+        encoded_otp_type = quote(cls._otp_type)
         encoded_secret = base64.b32encode(secret)
         encoded_issuer = quote(issuer)
         encoded_account = quote(account)
@@ -105,7 +105,7 @@ class OTPBase(object):
 
         uri = ("otpauth://{0}/{1}:{2}?secret={3}&issuer={1}"
                "&digits={4}&algorithm={5}"
-               .format(encoded_protocol, encoded_issuer, encoded_account,
+               .format(encoded_otp_type, encoded_issuer, encoded_account,
                        encoded_secret, n_digits, algorithm))
         for key, value in other_params.items():
             if key not in cls._extra_uri_parameters:
@@ -145,7 +145,7 @@ class OTPBase(object):
 
 
 class TOTP(OTPBase):
-    _protocol = 'totp'
+    _otp_type = 'totp'
     _extra_uri_parameters = frozenset(['period'])
 
     def __init__(self, secret, issuer, account,
@@ -198,7 +198,7 @@ class TOTP(OTPBase):
 
 
 class HOTP(OTPBase):
-    _protocol = 'hotp'
+    _otp_type = 'hotp'
     _extra_uri_parameters = frozenset(['counter'])
 
     def __init__(self, secret, issuer, account,
