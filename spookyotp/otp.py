@@ -98,7 +98,7 @@ class OTPBase(object):
         Complies with the google-authenticator KeyUriFormat
         """
         encoded_otp_type = quote(cls._otp_type)
-        encoded_secret = base64.b32encode(secret)
+        encoded_secret = base64.b32encode(secret).decode()
         encoded_issuer = quote(issuer)
         encoded_account = quote(account)
         encoded_algorithm = quote(algorithm)
