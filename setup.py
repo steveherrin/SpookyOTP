@@ -1,11 +1,14 @@
 from setuptools import setup
+from version import get_version
 
 def readme():
     with open('README.md') as f:
         return f.read()
 
+version = get_version()
+
 setup(name='SpookyOTP',
-      version='0.1',
+      version=version,
       description='A lightweight Python 2/3 package for handling HOTP/'
                   'TOTP (Google Authenticator) authentication.',
       classifiers=['Development Status :: 3 - Alpha',
@@ -13,7 +16,8 @@ setup(name='SpookyOTP',
                    'Topic :: Security'],
       keywords='totp hotp authenticator',
       url='https://github.com/steveherrin/SpookyOTP',
-      download_url='https://github.com/steverherrin/SpookyOTP/tarball/0.1',
+      download_url=
+        'https://github.com/steverherrin/SpookyOTP/tarball/{}'.format(version),
       author='Steve Herrin',
       author_email='steve.herrin@gmail.com',
       license='Apache2',
