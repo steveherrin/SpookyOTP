@@ -52,7 +52,7 @@ class TestOTPBase(unittest.TestCase):
         """
         self.assertRaises(ValueError, OTPBase._get_algorithm, 'sha1')
 
-    def _test_get_uri(self):
+    def test_get_uri(self):
         """
         Test generating the provisioning URL
 
@@ -73,13 +73,13 @@ class TestOTPBase(unittest.TestCase):
         self.assertEqual(uri[:10], "otpauth://")
 
         protocol, rest = uri[10:].split('/', 1)
-        self.assertEqual(protocol, OTPBase._protocol)
+        self.assertEqual(protocol, OTPBase._otp_type)
 
         self.assertEqual(rest[:15], "test:test_user?")
 
         params = rest[15:].split('&')
         import base64
-        self.assertIn("secret={}".format(base64.b32encode(secret)), params)
+        self.assertIn("secret={}".format('CERDGRCVMZ3YRGNK'), params)
         self.assertIn("issuer={}".format(issuer), params)
         self.assertIn("digits={}".format(n_digits), params)
         self.assertIn("algorithm={}".format(algorithm), params)
