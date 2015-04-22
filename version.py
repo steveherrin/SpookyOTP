@@ -30,6 +30,7 @@ def _get_version_from_git():
     Use the git tag to get a PEP compliant version string
     """
     tag = _get_most_recent_git_tag()
+    print(tag)
     # e.g. 1.0.1-4-f0f0333
     m = re.match(
         r"(?P<version>\d+\.\d+\.\d+)(?:-(?P<nadd>\d+)-(?P<hash>.+))?",
@@ -55,8 +56,12 @@ def _is_git_repo_dirty():
 
 
 def _get_most_recent_git_tag():
-    return subprocess.check_output(["git", "describe", "--tags"]).strip()
+    cmd = ["git", "describe", "--tags"]
+    tag = subprocess.check_output(cmd, universal_newlines=True).strip()
+    return tag
 
 
 def _get_git_hash():
-    return subprocess.check_output(["git", "rev-parse", "HEAD"]).strip()[:7]
+    cmd = ["git", "rev-parse", "HEAD"]
+    hash = subprocess.check_output(cmd, universal_newlines=True).strip()
+    return hash[:7]
