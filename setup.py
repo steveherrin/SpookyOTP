@@ -17,7 +17,7 @@ setup(name='SpookyOTP',
       keywords='totp hotp authenticator',
       url='https://github.com/steveherrin/SpookyOTP',
       download_url=
-        'https://github.com/steverherrin/SpookyOTP/archive/{}.tar.gz'.format(version),
+        'https://github.com/steveherrin/SpookyOTP/archive/{}.tar.gz'.format(version),
       author='Steve Herrin',
       author_email='steve.herrin@gmail.com',
       license='Apache2',
