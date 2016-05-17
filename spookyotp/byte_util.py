@@ -2,10 +2,9 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
-import sys
 
 
-__all__ = ['int_to_bytes', 'get_byte_as_int', 'bytes_to_31_bit_int']
+__all__ = ['int_to_bytearray', 'bytes_to_31_bit_int']
 
 
 def int_to_bytearray(number):
