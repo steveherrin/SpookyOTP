@@ -12,7 +12,6 @@ except ImportError:
 import time
 import hmac
 import hashlib
-import sys
 from spookyotp.byte_util import (int_to_bytearray,
                                  bytes_to_31_bit_int)
 
@@ -106,7 +105,7 @@ class OTPBase(object):
         uri = ("otpauth://{0}/{1}:{2}?secret={3}&issuer={1}"
                "&digits={4}&algorithm={5}"
                .format(encoded_otp_type, encoded_issuer, encoded_account,
-                       encoded_secret, n_digits, algorithm))
+                       encoded_secret, n_digits, encoded_algorithm))
         for key, value in other_params.items():
             if key not in cls._extra_uri_parameters:
                 raise ValueError("Got unexpected URL keyword '{}'"
@@ -221,7 +220,6 @@ class TOTP(OTPBase):
                        for i in range(-max_step_difference,
                                       max_step_difference + 1)]
         return any([self._compare(code, valid) for valid in valid_codes])
-
 
 
 class HOTP(OTPBase):
