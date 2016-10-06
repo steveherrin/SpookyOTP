@@ -13,9 +13,11 @@ or FreeOTP.
 Some features (such as using different hashing algorithms or displaying
 more than 6 digits) do not work with Google Authenticator.
 
+URIs generated (and QR codes encoding them) follow the [Google Authenticator format](https://github.com/google/google-authenticator/wiki/Key-Uri-Format)
+
 Example
 =======
-    from spookyotp import (get_random_secret, TOTP)
+    from spookyotp import (get_random_secret, TOTP, from_uri)
     
     secret = get_random_secret(n_bytes=10)
     totp = TOTP(secret, 'Example', 'user@example.org')
@@ -28,6 +30,10 @@ Example
         print("Correct!")
     else:
         print("Incorrect.")
+
+    # serialization and deserialization is supported via URI
+    uri = totp.get_uri()
+    new_totp = from_uri(uri)
 
 Why Spooky?
 ===========
