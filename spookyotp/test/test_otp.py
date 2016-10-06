@@ -2,6 +2,7 @@ import unittest
 import mock
 import sys
 import hashlib
+import six
 from spookyotp.otp import (OTPBase,
                            HOTP,
                            TOTP,
@@ -52,37 +53,75 @@ class TestOTPBase(unittest.TestCase):
         """
         self.assertRaises(ValueError, OTPBase._get_algorithm, 'sha1')
 
-    def test_get_uri(self):
+    def assert_uri_correct(self, uri, expected_params):
         """
-        Test generating the provisioning URL
-
         Should be otpauth://{t|h}otp/ISSUER:ACCOUNT?secret=B32SECRET&
                                                     issuer=issuer&
                                                     digits=DIGITS&
                                                     algorithm=ALGORITHM&
                                                     counter=COUNTER
                                                  or period=PERIOD
-        """
-        secret = b'\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa'
-        issuer = 'test'
-        account = 'test_user'
-        n_digits = 7
-        algorithm = 'sha256'
 
-        uri = OTPBase._get_uri(secret, issuer, account, n_digits, algorithm)
-        self.assertEqual(uri[:10], "otpauth://")
+        Assumes secret = b'\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa'
+        """
+        self.assertEqual(uri[:10], 'otpauth://')
 
         protocol, rest = uri[10:].split('/', 1)
         self.assertEqual(protocol, OTPBase._otp_type)
 
-        self.assertEqual(rest[:15], "test:test_user?")
+        # account is optional, so generate correct path
+        issuer = expected_params['issuer']
+        account = expected_params.pop('account', None)
+        if account is not None:
+            uri_path = '{}:{}'.format(issuer, account)
+        else:
+            uri_path = issuer
 
-        params = rest[15:].split('&')
+        self.assertEqual(rest[:len(uri_path)], uri_path)
+        self.assertEqual(rest[len(uri_path)], '?')
+
+        params = rest[len(uri_path) + 1:].split('&')
+
+        # check that secret is being correctly encoded
         import base64
+        self.assertEqual(b'\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa',
+                         expected_params.pop('secret'))
         self.assertIn("secret={}".format('CERDGRCVMZ3YRGNK'), params)
-        self.assertIn("issuer={}".format(issuer), params)
-        self.assertIn("digits={}".format(n_digits), params)
-        self.assertIn("algorithm={}".format(algorithm), params)
+
+        # check that other parameters are correct
+        for key, value in six.iteritems(expected_params):
+            if key == 'n_digits':
+                key = 'digits'
+            self.assertIn('{}={}'.format(key, value), params)
+
+    def test_get_uri_account(self):
+        """
+        Test generating the provisioning URL with an account
+        """
+        parameters = {
+            'secret': b'\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa',
+            'issuer': 'test',
+            'account': 'test_user',
+            'n_digits': 7,
+            'algorithm': 'sha256',
+        }
+
+        uri = OTPBase._get_uri(**parameters)
+        self.assert_uri_correct(uri, parameters)
+
+    def test_get_uri_no_account(self):
+        """
+        Test generating the provisioning URL with no account
+        """
+        parameters = {
+            'secret': b'\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa',
+            'issuer': 'test',
+            'n_digits': 7,
+            'algorithm': 'sha256',
+        }
+
+        uri = OTPBase._get_uri(**parameters)
+        self.assert_uri_correct(uri, parameters)
 
     def test_get_otp(self):
         """

@@ -88,8 +88,8 @@ class OTPBase(object):
         qr_code.save(filename)
 
     @classmethod
-    def _get_uri(cls, secret, issuer, account,
-                 n_digits, algorithm, **other_params):
+    def _get_uri(cls, secret, issuer, account=None,
+                 n_digits=None, algorithm=None, **other_params):
         """
         Return a URL that encodes the OTP parameters so they can
         be loaded onto a phone (or the like) via a QR code.
@@ -99,13 +99,16 @@ class OTPBase(object):
         encoded_otp_type = quote(cls._otp_type)
         encoded_secret = base64.b32encode(secret).decode()
         encoded_issuer = quote(issuer)
-        encoded_account = quote(account)
+        if account is not None:
+            encoded_path = '{}:{}'.format(encoded_issuer, quote(account))
+        else:
+            encoded_path = encoded_issuer
         encoded_algorithm = quote(algorithm)
 
-        uri = ("otpauth://{0}/{1}:{2}?secret={3}&issuer={1}"
+        uri = ("otpauth://{0}/{1}?secret={2}&issuer={3}"
                "&digits={4}&algorithm={5}"
-               .format(encoded_otp_type, encoded_issuer, encoded_account,
-                       encoded_secret, n_digits, encoded_algorithm))
+               .format(encoded_otp_type, encoded_path, encoded_secret,
+                       encoded_issuer, n_digits, encoded_algorithm))
         for key, value in other_params.items():
             if key not in cls._extra_uri_parameters:
                 raise ValueError("Got unexpected URL keyword '{}'"
@@ -147,7 +150,7 @@ class TOTP(OTPBase):
     _otp_type = 'totp'
     _extra_uri_parameters = frozenset(['period'])
 
-    def __init__(self, secret, issuer, account,
+    def __init__(self, secret, issuer, account=None,
                  n_digits=6, algorithm='sha1', period=30,
                  time_source=None):
         """
@@ -226,7 +229,7 @@ class HOTP(OTPBase):
     _otp_type = 'hotp'
     _extra_uri_parameters = frozenset(['counter'])
 
-    def __init__(self, secret, issuer, account,
+    def __init__(self, secret, issuer, account=None,
                  n_digits=6, algorithm='sha1', counter=0):
         """
         Generates HOTP (incrementing counter-based) codes.
