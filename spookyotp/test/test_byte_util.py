@@ -2,6 +2,7 @@ import unittest
 from spookyotp.byte_util import (int_to_bytearray,
                                  bytes_to_31_bit_int)
 
+
 class TestByteUtil(unittest.TestCase):
     """
     Tests for the byte-manipulation utilities
@@ -36,7 +37,7 @@ class TestByteUtil(unittest.TestCase):
         self.assertEqual(bytes_to_31_bit_int(b'\x88\x11\xaa\xff'), 135375615)
         self.assertEqual(bytes_to_31_bit_int(b'\xff'*8), 2**31 - 1)
         self.assertEqual(bytes_to_31_bit_int(bytearray(b'\x77\x11\xaa\xff')),
-                                             1997646591)
+                         1997646591)
 
 
 if __name__ == '__main__':

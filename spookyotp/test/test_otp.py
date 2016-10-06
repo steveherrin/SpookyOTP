@@ -1,12 +1,12 @@
 import unittest
 import mock
-import sys
 import hashlib
 import six
 from spookyotp.otp import (OTPBase,
                            HOTP,
                            TOTP,
                            get_random_secret)
+
 
 class TestSecretUtils(unittest.TestCase):
     """ Test utility functions for the secret.
@@ -83,7 +83,6 @@ class TestOTPBase(unittest.TestCase):
         params = rest[len(uri_path) + 1:].split('&')
 
         # check that secret is being correctly encoded
-        import base64
         self.assertEqual(b'\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa',
                          expected_params.pop('secret'))
         self.assertIn("secret={}".format('CERDGRCVMZ3YRGNK'), params)
@@ -305,7 +304,6 @@ class TestHOTP(unittest.TestCase, CommonOTPTests):
         self.assertEqual(self.otp.counter, self.counter)
         self.assertFalse(self.otp.compare(str(self.counter + 6), 5))
         self.assertEqual(self.otp.counter, self.counter)
-
 
 
 class TestTOTP(unittest.TestCase, CommonOTPTests):
