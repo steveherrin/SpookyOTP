@@ -5,7 +5,8 @@ import six
 from spookyotp.otp import (OTPBase,
                            HOTP,
                            TOTP,
-                           get_random_secret)
+                           get_random_secret,
+                           from_uri)
 
 
 class TestSecretUtils(unittest.TestCase):
@@ -218,6 +219,11 @@ class CommonOTPTests(object):
         Test compare raises when passed a negative look-ahead/around
         """
         self.assertRaises(ValueError, self.otp.compare, '000000', -1)
+
+    def test_from_uri(self):
+        uri = self.otp.get_uri()
+        otp = from_uri(uri)
+        self.assertIsInstance(otp, self.otp.__class__)
 
 
 class TestHOTP(unittest.TestCase, CommonOTPTests):

@@ -6,12 +6,14 @@ import base64
 from os import urandom
 import qrcode
 try:
-    from urllib.parse import quote
+    from urllib.parse import quote, unquote, urlparse
 except ImportError:
-    from urllib import quote
+    from urllib import quote, unquote
+    from urlparse import urlparse
 import time
 import hmac
 import hashlib
+from six import with_metaclass
 from spookyotp.byte_util import (int_to_bytearray,
                                  bytes_to_31_bit_int)
 
@@ -33,11 +35,22 @@ def constant_time_compare(str_a, str_b):
     return are_equal
 
 
-class OTPBase(object):
+def from_uri(uri):
+    return OTPBase.from_uri(uri)
+
+
+class _OTPBaseMeta(type):
+    def __init__(cls, name, bases, dct):
+        super(_OTPBaseMeta, cls).__init__(name, bases, dct)
+        cls._otp_type_lookup[cls._otp_type] = cls
+
+
+class OTPBase(with_metaclass(_OTPBaseMeta)):
     """
     Base class for the OTP generators
     """
     _otp_type = 'otp'
+    _otp_type_lookup = {}
     _extra_uri_parameters = frozenset()
     _default_parameters = {
         'n_digits': 6,
@@ -62,6 +75,28 @@ class OTPBase(object):
         self._n_digits = int(n_digits)
         self._algorithm_name = algorithm.lower()
         self._algorithm = self._get_algorithm(self._algorithm_name)
+
+    @classmethod
+    def from_uri(cls, uri):
+        parsed_uri = urlparse(uri)
+        otp_class = cls._otp_type_lookup[parsed_uri.netloc]
+
+        parameters = {}
+        if ':' in parsed_uri.path:
+            parameters['issuer'], parameters['account'] = map(unquote, parsed_uri.path.split(':'))
+        else:
+            parameters['issuer'] = unquote(parsed_uri.path)
+
+        for pair in parsed_uri.query.split('&'):
+            key, value = pair.split('=')
+            if key == 'digits':
+                key = 'n_digits'
+            if value.isdigit():
+                value = int(value)
+            else:
+                value = unquote(value)
+            parameters[key] = value
+        return otp_class(**parameters)
 
     @staticmethod
     def _get_algorithm(algorithm_name):
