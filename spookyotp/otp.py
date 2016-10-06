@@ -39,6 +39,10 @@ class OTPBase(object):
     """
     _otp_type = 'otp'
     _extra_uri_parameters = frozenset()
+    _default_parameters = {
+        'n_digits': 6,
+        'algorithm': 'sha1',
+    }
 
     def __init__(self):
         raise NotImplementedError()
@@ -103,17 +107,24 @@ class OTPBase(object):
             encoded_path = '{}:{}'.format(encoded_issuer, quote(account))
         else:
             encoded_path = encoded_issuer
-        encoded_algorithm = quote(algorithm)
 
-        uri = ("otpauth://{0}/{1}?secret={2}&issuer={3}"
-               "&digits={4}&algorithm={5}"
-               .format(encoded_otp_type, encoded_path, encoded_secret,
-                       encoded_issuer, n_digits, encoded_algorithm))
+        uri = "otpauth://{0}/{1}?secret={2}&issuer={3}".format(encoded_otp_type,
+                                                               encoded_path,
+                                                               encoded_secret,
+                                                               encoded_issuer)
+
+        if n_digits is not None and n_digits != cls._default_parameters['n_digits']:
+            uri += '&digits={}'.format(n_digits)
+        if algorithm is not None and algorithm != cls._default_parameters['algorithm']:
+            encoded_algorithm = quote(algorithm)
+            uri += '&algorithm={}'.format(encoded_algorithm)
+
         for key, value in other_params.items():
             if key not in cls._extra_uri_parameters:
                 raise ValueError("Got unexpected URL keyword '{}'"
                                  .format(key))
-            uri += '&{0}={1}'.format(key, quote(str(value)))
+            if (key not in cls._default_parameters) or (cls._default_parameters[key] != value):
+                uri += '&{0}={1}'.format(key, quote(str(value)))
         return uri
 
     @staticmethod
@@ -149,6 +160,11 @@ class OTPBase(object):
 class TOTP(OTPBase):
     _otp_type = 'totp'
     _extra_uri_parameters = frozenset(['period'])
+    _default_parameters = {
+        'n_digits': 6,
+        'algorithm': 'sha1',
+        'period': 30,
+    }
 
     def __init__(self, secret, issuer, account=None,
                  n_digits=6, algorithm='sha1', period=30,
@@ -228,6 +244,10 @@ class TOTP(OTPBase):
 class HOTP(OTPBase):
     _otp_type = 'hotp'
     _extra_uri_parameters = frozenset(['counter'])
+    _default_parameters = {
+        'n_digits': 6,
+        'algorithm': 'sha1',
+    }
 
     def __init__(self, secret, issuer, account=None,
                  n_digits=6, algorithm='sha1', counter=0):

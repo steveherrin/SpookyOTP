@@ -123,6 +123,20 @@ class TestOTPBase(unittest.TestCase):
         uri = OTPBase._get_uri(**parameters)
         self.assert_uri_correct(uri, parameters)
 
+    def test_get_uri_omitting_defaults(self):
+        """
+        Test generating the provisioning URL with default params
+        """
+        parameters_in_uri = {
+            'secret': b'\x11\x22\x33\x44\x55\x66\x77\x88\x99\xaa',
+            'issuer': 'test',
+        }
+        all_parameters = parameters_in_uri.copy()
+        all_parameters.update(OTPBase._default_parameters)
+
+        uri = OTPBase._get_uri(**all_parameters)
+        self.assert_uri_correct(uri, parameters_in_uri)
+
     def test_get_otp(self):
         """
         Verify the algorithm to generate the OTP works properly
