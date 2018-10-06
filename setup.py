@@ -11,6 +11,8 @@ setup(name='SpookyOTP',
       version=version,
       description='A lightweight Python 2/3 package for handling HOTP/'
                   'TOTP (Google Authenticator) authentication.',
+      long_description=readme(),
+      long_description_content_type='text/markdown',
       classifiers=['Development Status :: 4 - Beta',
                    'License :: OSI Approved :: Apache Software License',
                    'Topic :: Security',
