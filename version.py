@@ -30,7 +30,6 @@ def _get_version_from_git():
     Use the git tag to get a PEP compliant version string
     """
     tag = _get_most_recent_git_tag()
-    print(tag)
     # e.g. 1.0.1-4-f0f0333
     m = re.match(
         r"(?P<version>\d+\.\d+\.\d+)(?:-(?P<nadd>\d+)-(?P<hash>.+))?",
